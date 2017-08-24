@@ -4,6 +4,7 @@ const chalk = require('chalk');
 const bodyParser = require('body-parser');
 const nunjucks = require('nunjucks');
 const { User, Page, db } = require('./models');
+const routes = require('./routing');
 
 // initialize app
 const app = express();
@@ -30,10 +31,7 @@ nunjucks.configure('views', {
 // // when res.render works with html files, have it use nunjucks to do so
 // app.engine('html', nunjucks.render);
 
-app.use((req, res, next) => {
-  console.log('middleware is working!');
-  next();
-});
+app.use(routes);
 
 // serve static files
 app.use(express.static('public'));
