@@ -36,10 +36,6 @@ app.use(routes);
 // serve static files
 app.use(express.static('public'));
 
-app.get('/', (req, res, next) => {
-  res.render('index.html');
-});
-
 db.sync()
   .then(() => {
     app.listen(1337, () =>
