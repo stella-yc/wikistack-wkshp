@@ -13,6 +13,6 @@ router.get('/', (req, res, next) => {
 });
 
 router.use('/wiki', wikiRouter);
-router.use('/user', userRouter);
+router.use('/users', userRouter);
 
 module.exports = router;

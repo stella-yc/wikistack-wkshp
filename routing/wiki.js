@@ -15,19 +15,23 @@ router.post('/', (req, res, next) => {
     if (!createdBool) {
       throw new Error('User not created');
     } else {
-      return Page.create({
+      var page = Page.build({
         title: req.body.title,
         content: req.body.content,
-        status: req.body.status,
-        authorId: user.id
+        status: req.body.status
       });
+      return page.save()
+        .then(newPage => {
+          return newPage.setAuthor(user);
+        });
     }
-  }).then((page) => {
+  })
+  .then(page => {
     res.redirect(page.route);
   })
-    .catch((err) => {
-      console.error(err);
-    });
+  .catch((err) => {
+    console.error(err);
+  });
 });
 
 router.get('/add', (req, res, next) => {
@@ -38,14 +42,23 @@ router.get('/:page', (req, res, next) => {
   Page.findOne({
     where: {
       urlTitle: req.params.page
-    }
+    },
+    include: [
+        {model: User, as: 'author'}
+    ]
   })
   .then((page) => {
-    res.render('wikipage.html', {
-      title: page.title,
-      content: page.content,
-      urlTitle: page.urlTitle
-    });
+    if (page === null) {
+      res.status(404).send();
+    } else {
+      res.render('wikipage.html', {
+        title: page.title,
+        content: page.content,
+        urlTitle: page.urlTitle,
+        author: page.author.name,
+        authorId: page.authorId
+      });
+    }
   })
   .catch(console.error);
 });
