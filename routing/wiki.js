@@ -18,7 +18,8 @@ router.post('/', (req, res, next) => {
       var page = Page.build({
         title: req.body.title,
         content: req.body.content,
-        status: req.body.status
+        status: req.body.status,
+        tags: req.body.tags
       });
       return page.save()
         .then(newPage => {
@@ -36,6 +37,21 @@ router.post('/', (req, res, next) => {
 
 router.get('/add', (req, res, next) => {
   res.render('addpage.html');
+});
+
+router.get('/search', (req, res, next) => {
+  console.log(req.query.tags);
+  Page.findAll({
+    where: {
+      tags: {
+        $overlap: [req.query.tags]
+      }
+    }
+  })
+  .then((pages) => {
+    res.render('index.html', {pages: pages});
+  })
+  .catch(next);
 });
 
 router.get('/:page', (req, res, next) => {
@@ -56,11 +72,27 @@ router.get('/:page', (req, res, next) => {
         content: page.content,
         urlTitle: page.urlTitle,
         author: page.author.name,
-        authorId: page.authorId
+        authorId: page.authorId,
+        tags: page.tags
       });
     }
   })
   .catch(console.error);
+});
+
+router.get('/:page/similar', (req, res, next) => {
+  Page.findOne({
+    where: {
+      urlTitle: req.params.page
+    }
+  })
+  .then(page => {
+
+    return page.findSimilar();
+  })
+  .then(pages => {
+    res.render('index.html', {pages: pages});
+  });
 });
 
 module.exports = router;

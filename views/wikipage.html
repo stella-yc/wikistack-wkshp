@@ -3,9 +3,14 @@
 {% block content %}
   <h3>{{ title }} <small> (<a href="{{urlTitle}}/similar">Similar</a>)</small></h3>
   <h4>by <a href="users/{{ authorId }}L">{{ author }}</a></h4>
-  <div>PLACEHOLDER TAG LIST</div>
+  <div>
+    <ul>
+      {% for tag in tags %}
+        <li>{{ tag }}</li>
+      {% endfor %}
+    </ul>
+  </div>
   <hr/>
-  <div>PLACEHOLDER AUTHOR NAME WITH LINK TO AUTHOR PAGE</div>
   <div class="page-body">{{ content }}</div>
   <hr/>
   <a href="PLACEHOLDER_URL_TITLE/edit" class="btn btn-primary">edit this page</a>

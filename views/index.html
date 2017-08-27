@@ -1,6 +1,21 @@
 {% extends "layout.html" %}
 
 {% block content %}
+  <h3>Search for a Tag</h3>
+  <hr>
+  <form method="GET" action="/wiki/search">
+    <div class="form-group">
+      <label for="tags" class="col-sm-2 control-label">Tags</label>
+      <div class="col-sm-10">
+        <input name="tags" type="text" class="form-control"/>
+      </div>
+    </div>
+
+    <div class="col-sm-offset-2 col-sm-10">
+      <button type="submit" class="btn btn-primary">Search</button>
+    </div>
+
+  </form>
   <h3>Pages</h3>
   <hr>
   <ul class="list-unstyled">

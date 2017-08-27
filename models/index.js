@@ -37,35 +37,57 @@ const Page = db.define('page', {
   status: {
     type: Sequelize.ENUM('open', 'closed'),
     defaultValue: 'open'
+  },
+  tags: {
+    type: Sequelize.ARRAY(Sequelize.TEXT),
+    set(val) {
+      this.setDataValue('tags', val.toLowerCase().split(' '));
+    }
   }
 }, { // Model options
-  getterMethods: {
-    route() {
-      return `/wiki/${this.urlTitle}`;
-    }
-  },
-  hooks: {
-    beforeValidate: (page) => {
-    function generateUrlTitle (title) {
-      if (title) {
-        // Removes all non-alphanumeric characters from title
-        // And make whitespace underscore
-        return title.replace(/\s+/g, '_').replace(/\W/g, '');
-      } else {
-        // Generates random 5 letter string
-        return Math.random().toString(36).substring(2, 7);
+    getterMethods: {
+      route() {
+        return `/wiki/${this.urlTitle}`;
       }
-    }
-      page.urlTitle = generateUrlTitle(page.title);
     },
+    hooks: {
+      beforeValidate: (page) => {
+        function generateUrlTitle(title) {
+          if (title) {
+            // Removes all non-alphanumeric characters from title
+            // And make whitespace underscore
+            return title.replace(/\s+/g, '_').replace(/\W/g, '');
+          } else {
+            // Generates random 5 letter string
+            return Math.random().toString(36).substring(2, 7);
+          }
+        }
+        page.urlTitle = generateUrlTitle(page.title);
+      },
+    }
   }
-}
 );
 
-Page.belongsTo(User, {as: 'author'});
+Page.belongsTo(User, { as: 'author' });
+
+// Adding an instance level method
+Page.prototype.findSimilar = function () {
+  return Page.findAll({
+    where: {
+      tags: {
+        $overlap: this.tags
+      },
+      id: {
+        $ne: this.id
+      },
+    }
+  })
+    .catch(console.error);
+};
 
 module.exports = {
   User: User,
   Page: Page,
   db: db
 };
+
