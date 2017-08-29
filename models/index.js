@@ -50,6 +50,17 @@ const Page = db.define('page', {
         return `/wiki/${this.urlTitle}`;
       }
     },
+    classMethods: {
+      findByTag: function (tag) {
+        return this.findAll({
+          where: {
+            tags: {
+              $contains: [tag]
+            }
+          }
+        });
+      }
+    },
     hooks: {
       beforeValidate: (page) => {
         function generateUrlTitle(title) {
