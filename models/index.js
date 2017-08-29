@@ -50,17 +50,6 @@ const Page = db.define('page', {
         return `/wiki/${this.urlTitle}`;
       }
     },
-    classMethods: {
-      findByTag: function (tag) {
-        return this.findAll({
-          where: {
-            tags: {
-              $contains: [tag]
-            }
-          }
-        });
-      }
-    },
     hooks: {
       beforeValidate: (page) => {
         function generateUrlTitle(title) {
@@ -81,7 +70,7 @@ const Page = db.define('page', {
 
 Page.belongsTo(User, { as: 'author' });
 
-// Adding an instance level method
+// Adding an instance method
 Page.prototype.findSimilar = function () {
   return Page.findAll({
     where: {
@@ -94,6 +83,17 @@ Page.prototype.findSimilar = function () {
     }
   })
     .catch(console.error);
+};
+
+// class method
+Page.findByTag = function (tag) {
+  return this.findAll({
+    where: {
+      tags: {
+        $contains: [tag]
+      }
+    }
+  });
 };
 
 module.exports = {
