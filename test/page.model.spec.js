@@ -1,33 +1,33 @@
 'use strict';
 const chai = require('chai');
 const expect = chai.expect;
-const { Page, User } = require('../models');
+// assertions with promises and "eventually"
+// does not seem to work with chaiAsPromised, so those use the
+// "done" callback
+const chaiAsPromised = require('chai-as-promised');
+chai.use(chaiAsPromised);
 // chai-things plugin allows for assertions on array elements
 chai.use(require('chai-things'));
+const { Page, User } = require('../models');
+
 
 describe('Page Model Fields', function () {
   describe('Stores form values in database', function () {
     let pageOne;
-    before(function (done) {
-      Page.create({
+    before(function () {
+      return Page.create({
         title: 'Azula Rat',
         content: 'Gray Rat',
         status: 'open',
         tags: 'claws gray'
       })
-        .then(page => {
-          pageOne = page;
-          done();
-        })
-        .catch(done);
+      .then(page => {
+        pageOne = page;
+      });
     });
 
-    after(function (done) {
-      pageOne.destroy()
-        .then(() => {
-          done();
-        })
-        .catch(done);
+    after(function () {
+      return pageOne.destroy();
     });
 
     it('stores form values correctly', function () {
@@ -52,16 +52,14 @@ describe('Page Model Fields', function () {
     });
     describe('Page - User association', function () {
       let user;
-      before(function (done) {
-        User.create({
+      before(function () {
+        return User.create({
           name: 'Pepper',
           email: 'Pepper@pepper.com'
         })
-          .then(result => {
-            user = result;
-            done();
-          })
-          .catch(done);
+        .then(result => {
+          user = result;
+        });
       });
 
       after(function (done) {
@@ -69,13 +67,12 @@ describe('Page Model Fields', function () {
         done();
       });
 
-      it('adds the user foreign key to page instance', function (done) {
-        pageOne.setAuthor(user)
+      it('adds the user foreign key to page instance', function () {
+        let promise = pageOne.setAuthor(user)
           .then(page => {
-            expect(page.authorId).to.equal(user.id);
-            done();
-          })
-          .catch(done);
+            return page.authorId;
+          });
+        return expect(promise).to.eventually.equal(user.id);
       });
     });
     describe('Validations', function () {
@@ -96,7 +93,7 @@ describe('Page Model Fields', function () {
   describe('Page Model Options', function () {
     describe('findSimilar instance method', function () {
       let pageOne, pageTwo, pageThree;
-      before(function (done) {
+      before(function () {
         pageOne = Page.create({
           title: 'Azula',
           content: 'Gray Rat',
@@ -115,29 +112,20 @@ describe('Page Model Fields', function () {
           status: 'open',
           tags: 'patches white'
         });
-        Promise.all([pageOne, pageTwo, pageThree])
+        return Promise.all([pageOne, pageTwo, pageThree])
           .then(([first, sec, third]) => {
             pageOne = first;
             pageTwo = sec;
             pageThree = third;
-            done();
-          })
-          .catch(done);
+          });
       });
 
-      after(function (done) {
-        Promise.all([pageOne.destroy(), pageTwo.destroy(), pageThree.destroy()])
-          .then(() => done())
-          .catch(done);
+      after(function () {
+        return Promise.all([pageOne.destroy(), pageTwo.destroy(), pageThree.destroy()]);
       });
 
-      it('finds similar pages', function (done) {
-        pageOne.findSimilar()
-          .then(result => {
-            expect(result).to.have.lengthOf(1);
-            done();
-          })
-          .catch(done);
+      it('finds similar pages', function () {
+        return expect(pageOne.findSimilar()).to.eventually.have.lengthOf(1);
       });
 
       it('finds the correct similar pages', function (done) {
@@ -149,13 +137,9 @@ describe('Page Model Fields', function () {
           .catch(done);
       });
 
-      it('does not find false matches', function (done) {
-        pageThree.findSimilar()
-          .then(result => {
-            expect(result).to.have.lengthOf(0);
-            done();
-          })
-          .catch(done);
+      it('does not find false matches', function () {
+        const promise = pageThree.findSimilar();
+        return expect(promise).to.eventually.have.lengthOf(0);
       });
 
       it('does not find itself', function (done) {
@@ -171,49 +155,38 @@ describe('Page Model Fields', function () {
 
     describe('findByTag class method', function () {
       let page;
-      before(function (done) {
+      before(function () {
         page = Page.create({
           title: 'About Rats',
           content: 'There are a lot of rats',
           status: 'open',
           tags: 'rat fat fuzzy whiskers',
           urlTitle: 'About_Rats'
-        })
-          .then(() => {
-            done();
-          })
-          .catch(done);
+        });
+        return page;
       });
 
-      after(function (done) {
-        Page.findOne({
+      after(function () {
+        return Page.findOne({
           where: {
             urlTitle: 'About_Rats'
           }
         })
           .then(testPage => {
             testPage.destroy();
-            done();
-          })
-          .catch(done);
+          });
       });
 
-      it('gets pages with a search tag', function (done) {
-        Page.findByTag('fat')
+      it('gets pages with a search tag', function () {
+        const promise = Page.findByTag('fat')
           .then(result => {
-            // console.log('***', page);
-            expect(result[0].title).to.equal('About Rats');
-            done();
-          })
-          .catch(done);
+            return result[0].title;
+          });
+        return expect(promise).to.eventually.equal('About Rats');
       });
-      it('does not get pages without the search tag', function (done) {
-        Page.findByTag('llama')
-          .then(result => {
-            expect(result).to.have.lengthOf(0);
-            done();
-          })
-          .catch(done);
+      it('does not get pages without the search tag', function () {
+        const promise = Page.findByTag('llama');
+        return expect(promise).to.eventually.have.lengthOf(0);
       });
     });
   });

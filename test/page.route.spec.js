@@ -4,7 +4,7 @@ const app = require('../app.js');
 const agent = supertest.agent(app);
 const { User, Page } = require('../models');
 const chai = require('chai');
-var chaiAsPromised = require('chai-as-promised');
+const chaiAsPromised = require('chai-as-promised');
 chai.use(chaiAsPromised);
 const expect = require('chai').expect;
 
