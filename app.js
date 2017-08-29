@@ -46,3 +46,4 @@ db.sync()
     console.error(chalk.magenta(err));
   });
 
+module.exports = app;

@@ -41,7 +41,11 @@ const Page = db.define('page', {
   tags: {
     type: Sequelize.ARRAY(Sequelize.TEXT),
     set(val) {
-      this.setDataValue('tags', val.toLowerCase().split(' '));
+      if (val) {
+        this.setDataValue('tags', val.toLowerCase().split(' '));
+      } else {
+       this.setDataValue(null);
+      }
     }
   }
 }, { // Model options

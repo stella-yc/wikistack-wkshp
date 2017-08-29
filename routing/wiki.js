@@ -12,9 +12,6 @@ router.post('/', (req, res, next) => {
       email: req.body.email
     }
   }).spread((user, createdBool) => {
-    if (!createdBool) {
-      throw new Error('User not created');
-    } else {
       var page = Page.build({
         title: req.body.title,
         content: req.body.content,
@@ -25,7 +22,6 @@ router.post('/', (req, res, next) => {
         .then(newPage => {
           return newPage.setAuthor(user);
         });
-    }
   })
   .then(page => {
     res.redirect(page.route);
@@ -40,7 +36,6 @@ router.get('/add', (req, res, next) => {
 });
 
 router.get('/search', (req, res, next) => {
-  console.log(req.query.tags);
   Page.findAll({
     where: {
       tags: {
@@ -87,12 +82,20 @@ router.get('/:page/similar', (req, res, next) => {
     }
   })
   .then(page => {
-
-    return page.findSimilar();
+    if (page) {
+      return page.findSimilar();
+    } else {
+      return null;
+    }
   })
   .then(pages => {
-    res.render('index.html', {pages: pages});
-  });
+    if (!pages) {
+      res.sendStatus(404);
+    } else {
+      res.render('index.html', {pages: pages});
+    }
+  })
+  .catch(next);
 });
 
 module.exports = router;
